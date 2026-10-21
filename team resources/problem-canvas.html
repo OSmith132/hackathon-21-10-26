@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<title>Problem Canvas — Data for Citizens</title>
+<style>
+  @page { size: A4 portrait; margin: 12mm; }
+  body { font-family: system-ui, Arial, sans-serif; color: #111; margin: 0; }
+  .page { max-width: 190mm; margin: 0 auto; padding: 4mm; }
+  h1 { font-size: 20pt; margin: 0 0 2mm; }
+  .sub { font-size: 10pt; color: #444; margin-bottom: 4mm; }
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 3mm; }
+  .box { border: 1.5px solid #333; border-radius: 4px; padding: 3mm; min-height: 22mm; }
+  .box.wide { grid-column: 1 / 3; }
+  .box .label { font-weight: 700; font-size: 10.5pt; margin-bottom: 2mm; }
+  .box .hint { font-size: 8.5pt; color: #666; margin-bottom: 2mm; }
+  .fill {
+    min-height: 20pt;
+    border-bottom: 1px dotted #999;
+    padding: 2mm 0;
+    outline: none;
+    font-size: 11pt;
+    line-height: 1.6;
+  }
+  .fill:focus { border-bottom-color: #2b6cb0; background: #f0f7ff; }
+  .fill:empty::before { content: attr(data-placeholder); color: #aaa; }
+  .check-row { font-size: 10pt; display: flex; gap: 6mm; flex-wrap: wrap; padding: 2mm 0; }
+  .check-row label { display: flex; align-items: center; gap: 2mm; cursor: pointer; }
+  .check-row input[type="checkbox"] { width: 14px; height: 14px; cursor: pointer; }
+  .foot { margin-top: 4mm; font-size: 8.5pt; color: #666; display: flex; gap: 4mm; align-items: center; flex-wrap: wrap; }
+  .foot .fill { min-height: 14pt; flex: 1; max-width: 60mm; }
+  .toolbar {
+    position: fixed; top: 0; left: 0; right: 0;
+    background: #1a2340; color: #fff; padding: 4mm 6mm;
+    display: flex; gap: 4mm; align-items: center; z-index: 99;
+  }
+  .toolbar span { font-size: 9pt; opacity: 0.8; }
+  .toolbar button {
+    background: #fff; color: #1a2340; border: none; border-radius: 3px;
+    padding: 2mm 4mm; font-size: 9pt; font-weight: 600; cursor: pointer;
+  }
+  .toolbar button:hover { background: #e0e7ff; }
+  .page { margin-top: 14mm; }
+  @media print {
+    .toolbar { display: none; }
+    .page { margin-top: 0; }
+    .fill { border-bottom: 1px dotted #999; }
+    .fill:focus { background: none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="toolbar">
+  <span>Problem Canvas — Data for Citizens</span>
+  <button onclick="downloadPDF()">Download PDF</button>
+  <button onclick="resetCanvas()">Reset</button>
+</div>
+
+<div class="page" id="canvas">
+  <h1>Problem Canvas</h1>
+  <div class="sub">Data for Citizens &mdash; fill this in during the Define sprint (15 min). Start from the citizen, not the data.</div>
+
+  <div style="margin-bottom: 4mm; font-size: 11pt;">
+    <span style="font-weight: 700;">Team name:</span>
+    <div class="fill" contenteditable="true" data-placeholder="Type here" style="display: inline-block; min-width: 80mm; min-height: 14pt;"></div>
+  </div>
+
+  <div class="grid">
+    <div class="box">
+      <div class="label">1. Citizen user &amp; their question</div>
+      <div class="hint">Who exactly? What do they want to know or decide?</div>
+      <div class="fill" contenteditable="true" data-placeholder="e.g. A first-time buyer in Leeds wondering if now is a good time to buy…"></div>
+    </div>
+
+    <div class="box">
+      <div class="label">2. Archetype <span style="font-weight:400">(tick one)</span></div>
+      <div class="check-row">
+        <label><input type="checkbox" name="archetype" value="dashboard"> Dashboard</label>
+        <label><input type="checkbox" name="archetype" value="search"> Search tool</label>
+        <label><input type="checkbox" name="archetype" value="predictor"> Simple predictor</label>
+      </div>
+    </div>
+
+    <div class="box">
+      <div class="label">3. Dataset <span style="font-weight:400">(tick one)</span></div>
+      <div class="check-row">
+        <label><input type="checkbox" name="dataset" value="A"> A &mdash; House prices</label>
+        <label><input type="checkbox" name="dataset" value="B"> B &mdash; Food hygiene</label>
+        <label><input type="checkbox" name="dataset" value="C"> C &mdash; Crime</label>
+      </div>
+    </div>
+
+    <div class="box">
+      <div class="label">4. One-line problem statement</div>
+      <div class="hint">"Help [user] to [do/answer X] using [data]."</div>
+      <div class="fill" contenteditable="true" data-placeholder="Help a first-time buyer in Leeds to see whether prices are rising or falling in their area…"></div>
+    </div>
+
+    <div class="box wide">
+      <div class="label">5. Success metric &mdash; what does "this is working" look like?</div>
+      <div class="fill" contenteditable="true" data-placeholder="e.g. A citizen can type their postcode and see a 5-year trend in under 10 seconds."></div>
+    </div>
+
+    <div class="box wide">
+      <div class="label">6. Your one screen &mdash; describe what the user sees</div>
+      <div class="hint">What's at the top? What's the main visual? What's the one question it answers?</div>
+      <div class="fill" contenteditable="true" data-placeholder="Top: postcode input. Middle: line chart of median price by year. Bottom: one-sentence summary."></div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<script>
+function downloadPDF() {
+  const teamName = document.querySelector('[data-placeholder="Type here"]').textContent.trim();
+  if (!teamName) {
+    alert('Please enter your team name first.');
+    return;
+  }
+  const el = document.getElementById('canvas');
+  html2pdf().set({
+    margin: [10, 10, 10, 10],
+    filename: teamName.replace(/[^a-zA-Z0-9 _-]/g, '') + '-canvas.pdf',
+    image: { type: 'jpeg', quality: 0.95 },
+    html2canvas: { scale: 2, useCORS: true },
+    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+  }).from(el).save();
+}
+
+function resetCanvas() {
+  if (!confirm('Clear all fields?')) return;
+  document.querySelectorAll('.fill[contenteditable]').forEach(el => el.innerHTML = '');
+  document.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
+}
+
+// Radio behaviour: only one checkbox per group
+document.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+  cb.addEventListener('change', function() {
+    const name = this.name;
+    if (this.checked) {
+      document.querySelectorAll(`input[name="${name}"]`).forEach(other => {
+        if (other !== this) other.checked = false;
+      });
+    }
+  });
+});
+</script>
+</body>
+</html>
